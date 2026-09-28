@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Classifier Practical</title>
+    <!-- Load TensorFlow.js and MobileNet AI Model from CDN Cloud Networks -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 40px;
+            background-color: #f4f6f9;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: inline-block;
+            max-width: 450px;
+            width: 100%;
+        }
+        img {
+            max-width: 300px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover { background-color: #0056b3; }
+        #output {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Cloud AI Image Classifier</h2>
+    <p>Upload an image to classify it using a cloud-loaded TensorFlow MobileNet model.</p>
+    
+    <input type="file" id="imageLoader" accept="image/*" onchange="previewImage(event)">
+    <br>
+    <img id="imagePreview" src="" alt="Selected Image" style="display:none;">
+    <br>
+    <button onclick="classifyImage()">Classify Image with AI</button>
+
+    <div id="output">Status: Waiting for image...</div>
+</div>
+
+<script>
+    let model;
+
+    // Load pre-trained MobileNet AI model from cloud on start
+    async function loadModel() {
+        document.getElementById('output').innerText = "Loading AI Model from Cloud...";
+        model = await mobilenet.load();
+        document.getElementById('output').innerText = "AI Model Ready! Upload an image.";
+    }
+    loadModel();
+
+    // Preview uploaded image
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const img = document.getElementById('imagePreview');
+            img.src = reader.result;
+            img.style.display = 'inline-block';
+            document.getElementById('output').innerText = "Image loaded. Click 'Classify Image'.";
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    // Run classification inference using the loaded model
+    async function classifyImage() {
+        const img = document.getElementById('imagePreview');
+        if (!img.src || img.style.display === 'none') {
+            alert("Please upload an image first!");
+            return;
+        }
+        document.getElementById('output').innerText = "Analyzing image...";
+        
+        // AI model prediction step
+        const predictions = await model.classify(img);
+        
+        if (predictions && predictions.length > 0) {
+            const topResult = predictions[0];
+            const confidence = (topResult.probability * 100).toFixed(2);
+            document.getElementById('output').innerText = 
+                `Prediction: ${topResult.className}\nConfidence: ${confidence}%`;
+        } else {
+            document.getElementById('output').innerText = "Could not classify image.";
+        }
+    }
+</script>
+
+</body>
+</html>
